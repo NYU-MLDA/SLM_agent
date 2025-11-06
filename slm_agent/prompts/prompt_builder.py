@@ -137,9 +137,10 @@ class PromptBuilder:
             for file_path, content in context.items():
                 if file_path.startswith(prefix) and file_count < self.max_context_files:
                     # Truncate large files to 2000 chars
-                    truncated_content = content[:2000]
-                    if len(content) > 2000:
-                        truncated_content += "\n... (truncated)"
+                    # truncated_content = content[:2000]
+                    # if len(content) > 2000:
+                    #     truncated_content += "\n... (truncated)"
+                    truncated_content = content
                     
                     lines.append(f"\nFILE: {file_path}\n```\n{truncated_content}\n```")
                     file_count += 1

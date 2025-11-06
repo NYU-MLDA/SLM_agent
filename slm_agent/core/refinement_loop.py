@@ -79,7 +79,8 @@ class RefinementLoop:
             print("\n" + "=" * 80)
             print(f"PROMPT SENT TO SLM (Iteration {self.iteration}):")
             print("=" * 80)
-            print(prompt[:2000] + "..." if len(prompt) > 2000 else prompt)
+            #print(prompt[:2000] + "..." if len(prompt) > 2000 else prompt)
+            print(prompt)
             print("=" * 80 + "\n")
             
             # Generate code
@@ -96,7 +97,8 @@ class RefinementLoop:
             print("\n" + "=" * 80)
             print(f"RESPONSE FROM SLM (Iteration {self.iteration}):")
             print("=" * 80)
-            print(response[:2000] + "..." if len(response) > 2000 else response)
+            #print(response[:2000] + "..." if len(response) > 2000 else response)
+            print(response)
             print("=" * 80 + "\n")
             
             # Extract and validate code
@@ -144,7 +146,8 @@ class RefinementLoop:
                         print("\n" + "=" * 80)
                         print(f"PORT USAGE REFINEMENT PROMPT (Iteration {self.iteration}):")
                         print("=" * 80)
-                        print(port_prompt[:2000] + "..." if len(port_prompt) > 2000 else port_prompt)
+                        #print(port_prompt[:2000] + "..." if len(port_prompt) > 2000 else port_prompt)
+                        print(port_prompt)
                         print("=" * 80 + "\n")
                         
                         # Generate refined code with port usage
