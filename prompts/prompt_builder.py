@@ -11,17 +11,28 @@ logger = logging.getLogger(__name__)
 class PromptBuilder:
     """Construct optimized prompts for SLM code generation"""
     
-    def __init__(self, use_few_shot: bool = True, max_context_files: int = 10):
+    def __init__(self, use_few_shot: bool = True, max_context_files: int = 10, slm_max_tokens: int = 8192):
         """
         Initialize prompt builder
         
         Args:
             use_few_shot: Whether to include few-shot examples
             max_context_files: Maximum number of context files to include
+            slm_max_tokens: Maximum tokens available for SLM (from API config)
         """
         self.use_few_shot = use_few_shot
         self.max_context_files = max_context_files
+        self.slm_max_tokens = slm_max_tokens
+        
+        # Simple token budget: Reserve 25% for output response, 75% for input prompt
+        # Rough estimation: 1 token ~= 4 characters for English text
+        input_tokens = int(slm_max_tokens * 0.75)  # 75% for input (system, task, examples, context)
+        self.max_prompt_chars = input_tokens * 4    # Convert tokens to chars
+        
         logger.info(f"Initialized PromptBuilder (few_shot={use_few_shot}, max_files={max_context_files})")
+        logger.info(f"  SLM max tokens: {slm_max_tokens}")
+        logger.info(f"  Input budget: 75% = {input_tokens} tokens (~{self.max_prompt_chars} chars)")
+        logger.info(f"  Output reserve: 25% = {slm_max_tokens - input_tokens} tokens")
     
     def build_initial_prompt(self, task: str, context: Dict[str, str]) -> str:
         """
@@ -119,7 +130,7 @@ class PromptBuilder:
     
     def _format_context(self, context: Dict[str, str]) -> str:
         """
-        Format context files with prioritization
+        Format context files with prioritization and dynamic budget allocation
         
         Args:
             context: Dictionary of file_path -> content
@@ -129,6 +140,10 @@ class PromptBuilder:
         """
         lines = []
         file_count = 0
+        total_context_chars = 0
+        
+        # Calculate per-file budget: divide available chars by max files
+        chars_per_file = self.max_prompt_chars // max(self.max_context_files, 1)
         
         # Priority order: docs > rtl > verif
         priority_order = ["docs/", "rtl/", "verif/"]
@@ -136,18 +151,22 @@ class PromptBuilder:
         for prefix in priority_order:
             for file_path, content in context.items():
                 if file_path.startswith(prefix) and file_count < self.max_context_files:
-                    # Truncate large files to 2000 chars
-                    truncated_content = content[:2000]
-                    if len(content) > 2000:
+                    # Truncate large files to per-file budget
+                    truncated_content = content[:chars_per_file]
+                    if len(content) > chars_per_file:
                         truncated_content += "\n... (truncated)"
                     
-                    lines.append(f"\nFILE: {file_path}\n```\n{truncated_content}\n```")
+                    file_section = f"\nFILE: {file_path}\n```\n{truncated_content}\n```"
+                    lines.append(file_section)
+                    total_context_chars += len(file_section)
                     file_count += 1
         
         if not lines:
             return "No context files available"
         
         logger.info(f"Formatted {file_count} context files")
+        logger.info(f"  Total context chars: {total_context_chars}")
+        logger.info(f"  Per-file budget: {chars_per_file} chars")
         return "\n".join(lines)
     
     def _select_examples(self, task: str) -> str:

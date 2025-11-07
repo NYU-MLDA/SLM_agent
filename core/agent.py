@@ -62,7 +62,8 @@ class IterativeRefinementAgent:
         # Prompt engineering
         self.prompt_builder = PromptBuilder(
             use_few_shot=self.config.use_few_shot_examples,
-            max_context_files=self.config.max_context_files
+            max_context_files=self.config.max_context_files,
+            slm_max_tokens=self.config.slm_max_length
         )
         
         # HDL operations
