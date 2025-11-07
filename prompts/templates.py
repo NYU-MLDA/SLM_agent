@@ -154,7 +154,21 @@ OUTPUT FORMAT:
 - Use blocking (=) for combinational logic
 - End with: endmodule
 
-GENERATE: Complete synthesizable RTL code below"""
+CRITICAL INSTRUCTIONS:
+- Output ONLY the Verilog module code
+- Do NOT include explanations, reasoning, or comments outside the module
+- Start your response immediately with "module"
+- Do NOT write thinking steps before the code
+- Do NOT explain your approach before generating code
+
+REQUIRED FORMAT:
+module <name> (
+    // port declarations
+);
+    // internal logic
+endmodule
+
+GENERATE THE MODULE CODE NOW:"""
 
 
 # Refinement template for syntax/compilation errors
@@ -184,7 +198,13 @@ INSTRUCTIONS:
 - VERIFY: Ensure all fixes are complete
 - OUTPUT: Full corrected code (not diff/patch)
 
-GENERATE: Fixed Verilog code below"""
+CRITICAL INSTRUCTIONS:
+- Output ONLY the corrected Verilog module code
+- Do NOT include explanations or reasoning text
+- Start your response immediately with "module"
+- Do NOT write analysis or thinking steps before the code
+
+GENERATE THE FIXED MODULE CODE NOW:"""
 
 
 # Port usage refinement template (NEW)

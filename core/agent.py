@@ -3,15 +3,15 @@
 
 import logging
 from typing import Optional
-from ..config.settings import AgentConfig
-from ..utils.logger import setup_logging
-from ..llm.api_client import SLMAPIClient
-from ..llm.response_parser import ResponseParser
-from ..prompts.prompt_builder import PromptBuilder
-from ..hdl.code_manager import CodeManager
-from ..hdl.port_analyzer import PortAnalyzer
-from ..testing.test_runner import TestRunner
-from .refinement_loop import RefinementLoop
+from config.settings import AgentConfig
+from utils.logger import setup_logging
+from llm.api_client import SLMAPIClient
+from llm.response_parser import ResponseParser
+from prompts.prompt_builder import PromptBuilder
+from hdl.code_manager import CodeManager
+from hdl.port_analyzer import PortAnalyzer
+from testing.test_runner import TestRunner
+from core.refinement_loop import RefinementLoop
 
 logger = logging.getLogger(__name__)
 

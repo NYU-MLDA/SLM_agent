@@ -4,8 +4,8 @@
 import logging
 from pathlib import Path
 from typing import Tuple, List
-from .cocotb_runner import CocotbRunner
-from .lint_runner import LintRunner
+from testing.cocotb_runner import CocotbRunner
+from testing.lint_runner import LintRunner
 
 logger = logging.getLogger(__name__)
 
@@ -32,16 +32,21 @@ class TestRunner:
             Tuple of (success, error_messages)
         """
         logger.info("Starting test execution...")
+
+        # First try to find test harness
+        rundir = Path("/code/rundir")
         
-        # Check if CocoTB tests are available
-        cocotb_success, cocotb_errors = self.cocotb_runner.run()
-        
-        if cocotb_errors:  # CocoTB tests were found and executed
+        # Check if there's a pytest-based test
+        if (rundir / "../harness").exists() or Path("/src/test_runner.py").exists():
+            # Check if CocoTB tests are available
+            cocotb_success, cocotb_errors = self.cocotb_runner.run()
             return cocotb_success, cocotb_errors
-        
-        # Fallback to lint checks
-        logger.info("CocoTB tests not available, running lint checks...")
-        return self._run_lint_checks()
+            # if cocotb_errors:  # CocoTB tests were found and executed
+            #     return cocotb_success, cocotb_errors
+        else:
+            # Fallback to lint checks
+            logger.info("CocoTB tests not available, running lint checks...")
+            return self._run_lint_checks()
     
     def _run_lint_checks(self) -> Tuple[bool, str]:
         """Run lint checks on RTL files"""

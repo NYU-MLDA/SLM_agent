@@ -3,7 +3,7 @@
 
 import logging
 from typing import Dict, List
-from .templates import *
+from prompts.templates import *
 
 logger = logging.getLogger(__name__)
 

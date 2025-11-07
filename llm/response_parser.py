@@ -12,13 +12,39 @@ class ResponseParser:
     """Extract and validate Verilog code from SLM responses"""
     
     @staticmethod
+    def _remove_reasoning_text(response: str) -> str:
+        """
+        Remove common LLM reasoning patterns before extraction
+        
+        Args:
+            response: Raw response that may contain reasoning text
+            
+        Returns:
+            Response with reasoning text removed
+        """
+        # Remove leading thinking/reasoning sections before first proper module
+        # This handles cases like "Okay, let me think..." before the actual code
+        patterns_to_remove = [
+            r'^.*?(?=^\s*module\s+\w+\s*[\(#])',  # Remove everything before first proper module declaration
+        ]
+        
+        cleaned = response
+        for pattern in patterns_to_remove:
+            cleaned = re.sub(pattern, '', cleaned, flags=re.DOTALL | re.MULTILINE | re.IGNORECASE)
+        
+        # If pattern didn't match (no proper module found), return original
+        if cleaned.strip():
+            return cleaned
+        return response
+    
+    @staticmethod
     def extract_verilog(response: str) -> str:
         """
         Extract Verilog code from various response formats
         
         Tries multiple strategies:
         1. Markdown code blocks (```verilog, ```systemverilog, ```sv)
-        2. Module boundaries (module...endmodule)
+        2. Module boundaries (module...endmodule) with proper syntax
         3. Raw response (if no markers found)
         
         Args:
@@ -30,6 +56,9 @@ class ResponseParser:
         if not response:
             logger.warning("Empty response received")
             return ""
+        
+        # Pre-process to remove reasoning text
+        response = ResponseParser._remove_reasoning_text(response)
         
         # Strategy 1: Markdown code blocks
         markdown_patterns = [
@@ -44,15 +73,17 @@ class ResponseParser:
                 logger.info(f"Extracted from markdown block: {len(code)} bytes")
                 return code
         
-        # Strategy 2: Module boundaries
+        # Strategy 2: Module boundaries - require proper module declaration syntax
         if 'module ' in response.lower():
+            # Match proper module declaration: module <name> followed by ( or #
+            # This prevents matching "the module" or "module has to" in reasoning text
             match = re.search(
-                r'(module\s+\w+.*?endmodule)',
+                r'^\s*module\s+\w+\s*[\(#].*?endmodule\s*$',
                 response,
-                re.DOTALL | re.IGNORECASE
+                re.DOTALL | re.MULTILINE | re.IGNORECASE
             )
             if match:
-                code = match.group(1).strip()
+                code = match.group(0).strip()
                 logger.info(f"Extracted module definition: {len(code)} bytes")
                 return code
         

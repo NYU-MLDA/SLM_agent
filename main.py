@@ -2,8 +2,8 @@
 """Main entry point for SLM Agent"""
 
 import sys
-from .core.agent import IterativeRefinementAgent
-from .config.settings import AgentConfig
+from core.agent import IterativeRefinementAgent
+from config.settings import AgentConfig
 
 
 def main():
